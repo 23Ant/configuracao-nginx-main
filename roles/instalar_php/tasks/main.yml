@@ -1,0 +1,46 @@
+---
+- name: Instalando dependências
+  yum:
+    name: "{{ REQUIRED_PACKAGES }}"
+    state: present
+
+- name: adicionando remi-php
+  yum_repository:
+    name: remi-php{{ REMI_PHP }}
+    description: Remi's PHP RPM repository for Enterprise Linux
+    mirrorlist: http://rpms.remirepo.net/enterprise/$releasever/php{{ REMI_PHP }}/mirror
+    enabled: yes
+    gpgcheck: 1
+    gpgkey: http://rpms.remirepo.net/RPM-GPG-KEY-remi
+
+- name: Atualizando os pacotes
+  yum:
+    name: "*"
+    state: latest
+
+- name: Instalando pacotes php
+  yum:
+    name: "{{ PHP_PACKAGES }}"
+  notify: Reiniciar o serviço do php
+
+- name: Iniciando php-fpm on centos
+  service:
+    name: php-fpm
+    state: started
+    enabled: yes
+
+- name: Setting the php
+  template:
+    src: templates/php.ini.j2
+    dest: /etc/php.ini
+    owner: root
+    group: root
+  notify: Reiniciar o serviço do php
+
+- name: Setting the php-fpm fastcgi server of nginx
+  template:
+    src: templates/www.conf.j2
+    dest: /etc/php-fpm.d/www.conf
+    owner: root
+    group: root
+  notify: Reiniciar o serviço do php

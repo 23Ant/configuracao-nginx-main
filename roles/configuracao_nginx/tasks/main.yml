@@ -1,0 +1,46 @@
+---
+# tasks file for ConfiguracaoNginx
+
+- name: Desabilitando firewalld
+  service:
+    name: firewalld
+    enabled: no
+    state: stopped
+
+- name: Disable SELinux
+  selinux:
+    state: disabled
+
+- name: Instalando dependencias
+  yum:
+    name: "{{ REQUIRED_PACKAGES }}"
+    state: present
+
+- name: Instalar Nginx
+  yum:
+    name: nginx
+    state: present
+
+#Criando arquivo nginx.conf
+
+- name: Criando conf.d do Nginx
+  template:
+    src: "{{ TEMPLATE_CONFD }}"
+    dest: /etc/nginx/conf.d/{{ item.NAME }}.conf
+    owner: nginx
+    group: nginx
+  with_items:
+    - "{{ CONFIG_PRODUCTION }}"
+  notify:
+    - Restart nginx
+
+- name: Criando conf.d Nginx
+  template:
+    src: "{{ TEMPLATE_NGINX }}"
+    dest: /etc/nginx/nginx.conf
+    owner: nginx
+    group: nginx
+  notify:
+    - Restart nginx
+
+#falta modulos do nginx

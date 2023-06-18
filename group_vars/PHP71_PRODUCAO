@@ -1,0 +1,10 @@
+ansible_ssh_port: 22
+ansible_ssh_user: servidorlinux
+ansible_ssh_pass: aluno
+ansible_become: yes
+ansible_become_method: su
+ansible_become_user: root
+ansible_become_pass: aluno
+ansible_connection: ssh 
+
+# servidor 150 e 240

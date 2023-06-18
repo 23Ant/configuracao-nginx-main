@@ -1,0 +1,26 @@
+---
+- hosts: www
+  remote_user: servidorlinux
+  become: yes
+  become_user: root
+  order: sorted
+  tasks: 
+  - name: Remocao de pacotes
+    yum:
+      name: "{{ packages }}"
+      state: absent
+    vars:
+      packages:
+        - httpd
+        - nginx
+
+  - name: Instalacao de pacotes
+    yum:
+      name: "{{ packages }}"
+      state: latest
+    vars:
+      packages:
+        - nmap
+        - tcdump
+        - vim 
+...

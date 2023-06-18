@@ -1,0 +1,54 @@
+---
+
+# Gerenciamento de pacotes e atualizacao do sistema operacional
+
+#- name: Atualizacao do Sistema Operacional
+#  yum: name=* state=latest update_cache=yes
+
+#- name: Instalacao de pacotes
+#  yum:
+#    name: "{{ packages }}"
+#    state: latest
+#  vars:
+#    packages:
+#      - net-tools
+#      - vim
+#      - nmap
+
+#Configuracao de TimeZone
+
+#- name: Configurando Timezone
+#  file: src=/usr/share/zoneinfo/America/Sao_Paulo dest=/etc/localtime state=link force=yes
+
+# Copia de arquivos
+
+#- name: Copiando arquivo de backup
+#  copy: src=backup.tar.xz dest=/tmp/backup.tar.xz
+
+# Quando eu executar esse script no Ansible e entrar na maquina dando SSH ele irá mostrar a mensagem a baixo, com ip e hostname da maquina.
+#- name: Copiando um template
+#  template: src=motd dest=/etc/motd force=yes owner=root group=root
+
+
+# Desabilitando FirewallD
+
+- name: Desabilitando firewalld
+  service:
+    name: firewalld
+    enabled: no
+    state: stopped
+
+# Desabilitando SELinux
+
+- name: Desabilitando SELinux
+  selinux:
+    state: disabled    
+
+# Instalacao do Nginx
+
+- name: Instalacao do Nginx
+  yum: name=nginx state=latest
+  notify: Restart nginx
+
+
+...

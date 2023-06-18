@@ -1,0 +1,18 @@
+---
+
+TEMPLATE_NGINX: all_nginx.j2
+TEMPLATE_CONFD: laravel_confd.j2
+PATH: /home/aluno/
+APPLICATION_ENV_PRODUCTION: production
+PHP_SOCK: /var/run/php-fpm/www.sock #FC3 SOCK
+CONFIG_PRODUCTION:
+# FATEC API #############################################################
+  - NAME: 99-fatec-api.tcc.com
+    CONFIG_PRODUCTION: atletas-api.tcc.com
+    SSL_CERTIFICATE: "{{ SSL_CERTIFICATE_TCC_COM_FC }}"
+    SSL_CERTIFICATE_KEY: "{{ SSL_CERTIFICATE_KEY_TCC_COM_FC }}"
+
+
+INSTRUCTION:
+  - env_laravel
+  - laravel

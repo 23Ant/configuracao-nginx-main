@@ -1,0 +1,7 @@
+- name: Default Playbook - Starting Deploy
+  hosts: fatec_producao
+  roles:
+    - configuracao_nginx
+  #  - updates
+  # - mysql
+  # - php

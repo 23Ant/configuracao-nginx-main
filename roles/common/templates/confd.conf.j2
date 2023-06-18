@@ -1,0 +1,110 @@
+server {
+  listen                        80;
+  #listen                        443 ssl;
+  server_name                   {{ item.CONFIG_PRODUCTION }};
+  root                          {{ PATH }};
+
+#CERTICADOS
+#  ssl_certificate               {{ SSL_CERTIFICATE_TCC_COM }};
+#  ssl_certificate_key           {{ SSL_CERTIFICATE_KEY_TCC_COM }};
+#  ssl_protocols                 TLSv1.2;
+#  ssl_prefer_server_ciphers     On;
+#  ssl_ciphers                   "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:AES:CAMELLIA:!DES-CBC3-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA:!DSS";
+#  ssl_dhparam                   /etc/nginx/ssl/dhparams.pem;
+#  add_header                    X-XSS-Protection "1; mode=block";
+#  add_header                    X-Content-Type-Options nosniff;
+#  add_header                    X-Frame-Options SAMEORIGIN;
+#  add_header                    Public-Key-Pins 'pin-sha256="Y6PNW6aPfUDNxPtTAz8cFUgaLDynEMF0acrdWfkmLsU="; max-age=5184000; includeSubDomains' always ;
+#
+#  ssl_session_cache             shared:SSL:20m;
+#  ssl_session_timeout           4h;
+#  ssl_session_tickets           On;
+
+
+#LOGS
+  access_log                    /var/log/nginx/{{ item.NAME }}_access.log;
+  error_log                     /var/log/nginx/{{ item.NAME }}_error.log warn;
+
+#### Disable logs
+  location ~*\.(jpg|jpeg|gif|png|css|js|ico|xml)$ {
+    access_log                  off;
+    log_not_found               off;
+    expires                     30d;
+  }
+
+##############################################
+
+  # Rewrite rule adapted for Zend Framework
+  location / {
+    if (!-f $request_filename) {
+      rewrite               ^(.*)$    /index.php last;
+    }
+  }
+
+##############################################
+
+  # Disable methods
+    if ($request_method !~ ^(GET|HEAD|POST)$ ){
+    return                      405;
+  }
+  
+#ERROR PAGE
+    error_page  404              /404.html;
+    location = /404.html {
+        root                      /usr/share/nginx/html;
+    }
+
+    # redirect server error pages to the static page /50x.html
+    #
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root                            /usr/share/nginx/html;
+    }
+
+    # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
+    #
+    location ~ \.php$ {
+        include                         fastcgi_params;
+        try_files                       $uri $uri/ =404;
+        fastcgi_keep_conn               on;
+        fastcgi_index                   index.php;
+        fastcgi_read_timeout            150;
+        proxy_read_timeout              300;
+
+        fastcgi_param                   SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param                   APPLICATION_ENV {{ APPLICATION_ENV_PRODUCTION }};
+        fastcgi_param                   SCRIPT_NAME $fastcgi_script_name;
+        fastcgi_param                   PATH_INFO $fastcgi_path_info;
+
+        fastcgi_buffer_size             128k;
+        fastcgi_buffers                 256 16k;
+        fastcgi_busy_buffers_size       256k;
+        fastcgi_temp_file_write_size    256k;
+
+        fastcgi_split_path_info         ^(.+\.php)(.*)$;
+
+        fastcgi_pass                    unix:{{ PHP_SOCK }};
+    }
+
+    # deny access to .htaccess files, if Apache's document root
+    # concurs with nginx's one
+    #
+    location ~ /\.ht {
+        deny                             all;
+    }
+
+    #
+    # Deny access to .svn directory files
+    #
+    location ~ /\.svn {
+      deny all;
+    }
+
+    # Status
+    location /nginx_status {
+      stub_status                        on;
+      access_log                         off;
+      allow                              127.0.0.1;
+      deny                               all;
+    }
+}
